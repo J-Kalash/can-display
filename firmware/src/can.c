@@ -60,10 +60,10 @@ void CAN_Init()
 	// Wait for init mode
 	while ((CAN->MSR & CAN_MSR_INAK) == 0);
 
-	CAN->BTR = (1 << 24) |	// SJW = 1
-				(1 << 20) | // TS2 = 2
-				(4 << 16) |	// TS1 = 5
-				(3 << 0);   // BRP = 1/4
+	CAN->BTR = (1 << 24) |		// SJW = 1
+				(4 << 20) | 	// TS2 = 4
+				(11 << 16) |	// TS1 = 11
+				(5 << 0);   	// BRP = 1/4
 
 	CAN->MCR |= CAN_MCR_NART;
 
@@ -86,10 +86,10 @@ void CAN_Init()
 
 	CAN->IER |= CAN_IER_FMPIE0;
 
-	// Turn on GPIOs
-	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
-	GPIOA->AFR[1] |= 0x99 << 12;
-	GPIOA->MODER |= GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1;
+	// Turn on GPIOs PB8/9 to AF4 (CAN)
+	RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
+	GPIOB->AFR[1] |= 0x44;
+	GPIOB->MODER |= GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1;
 
 	NVIC_EnableIRQ(CEC_CAN_IRQn);
 }
