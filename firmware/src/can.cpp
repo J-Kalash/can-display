@@ -1,6 +1,6 @@
 #include "can.h"
 
-#include "stm32f0xx.h"
+#include "stm32f4xx.h"
 
 typedef struct can_handler_entry_s {
 	uint16_t id;
@@ -53,61 +53,61 @@ static void CAN_RecieveFrame(can_frame_t* frame)
 void CAN_Init()
 {
 	// Turn on CAN peripheral
-	RCC->APB1ENR |= RCC_APB1ENR_CANEN;
+	RCC->APB1ENR |= RCC_APB1ENR_CAN1EN;
 
 	// Enter init mode
-	CAN->MCR |= CAN_MCR_INRQ;
+	CAN1->MCR |= CAN_MCR_INRQ;
 	// Wait for init mode
-	while ((CAN->MSR & CAN_MSR_INAK) == 0);
+	while ((CAN1->MSR & CAN_MSR_INAK) == 0);
 
-	CAN->BTR = (1 << 24) |		// SJW = 1
+	CAN1->BTR = (1 << 24) |		// SJW = 1
 				(4 << 20) | 	// TS2 = 4
 				(11 << 16) |	// TS1 = 11
 				(5 << 0);   	// BRP = 1/4
 
-	CAN->MCR |= CAN_MCR_NART;
+	CAN1->MCR |= CAN_MCR_NART;
 
 	// Leave init mode
-	CAN->MCR &= ~CAN_MCR_INRQ;
+	CAN1->MCR &= ~CAN_MCR_INRQ;
 	// Wait for end of init mode
-	while (CAN->MSR & CAN_MSR_INAK);
+	while (CAN1->MSR & CAN_MSR_INAK);
 
 	// Leave sleep
-	CAN->MCR &= ~CAN_MCR_SLEEP;
+	CAN1->MCR &= ~CAN_MCR_SLEEP;
 	// Wait for the awakening
-	while (CAN->MSR & CAN_MSR_SLAK);
+	while (CAN1->MSR & CAN_MSR_SLAK);
 
 
-	CAN->FMR |= CAN_FMR_FINIT;
-	CAN->sFilterRegister[0].FR1 = 0;
-	CAN->sFilterRegister[0].FR2 = 0;
-	CAN->FA1R = 1;
-	CAN->FMR &= ~CAN_FMR_FINIT;
+	CAN1->FMR |= CAN_FMR_FINIT;
+	CAN1->sFilterRegister[0].FR1 = 0;
+	CAN1->sFilterRegister[0].FR2 = 0;
+	CAN1->FA1R = 1;
+	CAN1->FMR &= ~CAN_FMR_FINIT;
 
-	CAN->IER |= CAN_IER_FMPIE0;
+	CAN1->IER |= CAN_IER_FMPIE0;
 
 	// Turn on GPIOs PB8/9 to AF4 (CAN)
-	RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
 	GPIOB->AFR[1] |= 0x44;
 	GPIOB->MODER |= GPIO_MODER_MODER8_1 | GPIO_MODER_MODER9_1;
 
-	NVIC_EnableIRQ(CEC_CAN_IRQn);
+	NVIC_EnableIRQ(CAN1_RX0_IRQn);
 }
 
 void CEC_CAN_IRQHandler()
 {
 	// check that we rx'd something
-	if(CAN->RF0R & CAN_RF0R_FMP0)
+	if(CAN1->RF0R & CAN_RF0R_FMP0)
 	{
 		can_frame_t f;
 
-		f.data32[1] = CAN->sFIFOMailBox[0].RDHR;
-		f.data32[0] = CAN->sFIFOMailBox[0].RDLR;
-		f.id = CAN->sFIFOMailBox[0].RIR >> 21;
+		f.data32[1] = CAN1->sFIFOMailBox[0].RDHR;
+		f.data32[0] = CAN1->sFIFOMailBox[0].RDLR;
+		f.id = CAN1->sFIFOMailBox[0].RIR >> 21;
 
 		CAN_RecieveFrame(&f);
 
 		// Release message
-		CAN->RF0R |= CAN_RF0R_RFOM0;
+		CAN1->RF0R |= CAN_RF0R_RFOM0;
 	}
 }

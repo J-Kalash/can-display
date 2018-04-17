@@ -1,6 +1,6 @@
 #include "tach_output.h"
 
-#include "stm32f0xx.h"
+#include "stm32f4xx.h"
 
 static uint8_t cyl = 4;
 
@@ -11,7 +11,7 @@ void Tach_Init(uint8_t cylinders)
 	// Turn power on
 	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
 	// Turn on GPIO A for output channel
-	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
 
 	// Set up timer for tach output
 	// No division, upcounter, not running
