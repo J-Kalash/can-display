@@ -66,33 +66,45 @@ uint8_t SPI_SendReceive(uint8_t tx)
 
 void SPI_Send_DMA(uint8_t* ptr, uint16_t count)
 {
-	uint8_t* p2 = (uint8_t*)ptr;
+	/*uint8_t* p2 = (uint8_t*)ptr;
 
 	for(int i = 0; i < count; i += 2)
 	{
 		SPI_Send(p2[i + 1]);
 		SPI_Send(p2[i]);
 
-		/*SPI_Send(((uint8_t*)ptr)[i]);*/
-	}
+		//SPI_Send(((uint8_t*)ptr)[i]);
+	}*/
 
+
+	// put SPI in 16 bit mode
+	SPI1->CR1 &= ~SPI_CR1_SPE;	// disable
+	SPI1->CR1 |= SPI_CR1_DFF;	// set to 16-bit
+	SPI1->CR1 |= SPI_CR1_SPE;	// enable
 
 	// reset
-	/*DMA2->LIFCR |= DMA_LIFCR_CTCIF3 | DMA_LIFCR_CHTIF3;
+	DMA2->LIFCR |= DMA_LIFCR_CTCIF3 | DMA_LIFCR_CHTIF3;
 	DMA2_Stream3->CR = 0;
 
 	DMA2_Stream3->CR = 3 << 25 |	// channel 3
+						   DMA_SxCR_MSIZE_0 | // 16 bit transfers (2 bytes) for memory
+						   DMA_SxCR_PSIZE_0 | // 16 bit transfers (2 bytes) for peripheral
 						   DMA_SxCR_PL_1 |	// high priority
 						   DMA_SxCR_MINC |	// increment memory addr
 						   DMA_SxCR_DIR_0; // mem -> peripheral
 
 	DMA2_Stream3->M0AR = (uintptr_t)ptr;
 	DMA2_Stream3->PAR = (uintptr_t)&SPI1->DR;
-	DMA2_Stream3->NDTR = count;
+	DMA2_Stream3->NDTR = count / 2;
 
 	// hit it
 	DMA2_Stream3->CR |= DMA_SxCR_EN;
 
 	// wait for complete
-	while(!READ_BIT(DMA2->LISR, DMA_LISR_TCIF3));*/
+	while(!READ_BIT(DMA2->LISR, DMA_LISR_TCIF3));
+
+	// put SPI back in 8 bit mode
+	SPI1->CR1 &= ~SPI_CR1_SPE;	// disable
+	SPI1->CR1 &= ~SPI_CR1_DFF;	// set to 16-bit
+	SPI1->CR1 |= SPI_CR1_SPE;	// enable
 }
