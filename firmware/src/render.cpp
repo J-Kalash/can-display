@@ -4,7 +4,7 @@
 
 #include "stm32f4xx.h"
 
-#include "font_comicsans_30.h"
+#include "font.h"
 
 typedef struct character_s {
 	uint8_t data[30];
@@ -12,7 +12,7 @@ typedef struct character_s {
 
 void Render::DrawString(uint16_t x, uint16_t y, uint16_t kern, char* str, uint32_t color)
 {
-    while(*str != 0)
+	while(*str != 0)
     {
     	font_character_t* c = &font_comicsans_30[*str - ' '];
 
@@ -27,7 +27,7 @@ void Render::DrawString(uint16_t x, uint16_t y, uint16_t kern, char* str, uint32
     }
 }
 
-void DMA2DRender::CopyRectangleAndBlendBackground(void* source, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color)
+void DMA2DRender::CopyRectangleAndBlendBackground(const void* source, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color)
 {
     this->ResetDMA2DAndMode(ModeMemToMemBlend);
 

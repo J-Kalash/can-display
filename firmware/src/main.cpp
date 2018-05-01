@@ -1,5 +1,6 @@
 #include "stm32f4xx.h"
 
+#include "font.h"
 #include "lcd.h"
 #include "can.h"
 #include "tach_output.h"
@@ -55,6 +56,8 @@ uint16_t rgb(uint8_t r, uint8_t g, uint8_t b) {
 int main(void)
 {
 	SystemCoreClockUpdate();
+
+	Fonts_Init();
 
 	//Tach_Init(8);
 
