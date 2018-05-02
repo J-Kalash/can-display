@@ -27,5 +27,6 @@ typedef void (*CanFrameReceptionHandler_t)(can_frame_t*);
 void CAN_Init();
 int CAN_RegisterReceptionHandler(uint16_t id, CanFrameReceptionHandler_t handler);
 
+void CAN_send(can_frame_t* f);
 
 #endif
