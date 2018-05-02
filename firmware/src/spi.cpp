@@ -24,10 +24,12 @@ void SPI_Init()
 
 
 	// Plumb GPIOs
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIODEN;
 	GPIOA->AFR[0] |= 0x50500000;	// AF5 for PA5/7
-	GPIOA->OSPEEDR |= 0xCF00;	// High speed PA4/5/7
-	GPIOA->MODER |= 0x8900;		// PA5/7 = alt func, PA4 = gen. output
+	GPIOA->OSPEEDR |= 0xCC00;	// High speed PA5/7
+	GPIOA->MODER |= 0x8800;		// PA5/7 = alt func
+
+	GPIOD->MODER |= 0x10000000;   // PD14 = gen. output (chip select)
 
 	// Set CS to idle
 	SPI_TransactionEnd();
@@ -35,7 +37,7 @@ void SPI_Init()
 
 void SPI_TransactionBegin()
 {
-	GPIOA->BSRRH = 1 << 4;
+	GPIOD->BSRRH = 1 << 14;
 }
 
 void SPI_TransactionEnd()
@@ -43,7 +45,7 @@ void SPI_TransactionEnd()
 	// wait for not busy
 	while(READ_BIT(SPI1->SR, SPI_SR_BSY));
 
-	GPIOA->BSRRL = 1 << 4;
+	GPIOD->BSRRL = 1 << 14;
 }
 
 inline void SPI_Send(uint8_t tx)

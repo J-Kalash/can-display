@@ -40,19 +40,20 @@ void LCD_Init() {
 	SPI_Init();
 
 	// PA6 = gpio output
-	GPIOA->MODER |= 1 << 12;
-	GPIOA->MODER |= 1 << 6; // pa3 = reset
+	GPIOD->MODER |= 1 << 30; // pd15 = reset
+	GPIOA->MODER |= 1 << 12; // pa6 = command/data
 
 	// Toggle RST low to reset; CS low so it'll listen to us
 	SPI_TransactionBegin();
 
 	// Reset OLED
+	// Reset pin PD15
 	{
-		GPIOA->BSRRL = 1 << 3;	// high
+		GPIOD->BSRRL = 1 << 15;	// high
 		wait();
-		GPIOA->BSRRH = 1 << 3;	// low
+		GPIOD->BSRRH = 1 << 15;	// low
 		wait();
-		GPIOA->BSRRL = 1 << 3;	// high
+		GPIOD->BSRRL = 1 << 15;	// high
 		wait();
 	}
 
