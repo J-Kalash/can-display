@@ -13,7 +13,7 @@ void SPI_Init()
 				SPI_CR1_CPOL |
 				SPI_CR1_SSM |	// we manage CS pin ourselves
 				SPI_CR1_SSI |
-				0 << 3 |		// fpclk / 8 = ~10.5mbit/s
+				2 << 3 |		// fpclk / 8 = ~10.5mbit/s
 				SPI_CR1_MSTR;	// SPI master
 	SPI1->CR2 = SPI_CR2_TXDMAEN;
 
@@ -68,17 +68,6 @@ uint8_t SPI_SendReceive(uint8_t tx)
 
 void SPI_Send_DMA(uint8_t* ptr, uint16_t count)
 {
-	/*uint8_t* p2 = (uint8_t*)ptr;
-
-	for(int i = 0; i < count; i += 2)
-	{
-		SPI_Send(p2[i + 1]);
-		SPI_Send(p2[i]);
-
-		//SPI_Send(((uint8_t*)ptr)[i]);
-	}*/
-
-
 	// put SPI in 16 bit mode
 	SPI1->CR1 &= ~SPI_CR1_SPE;	// disable
 	SPI1->CR1 |= SPI_CR1_DFF;	// set to 16-bit
