@@ -7,10 +7,28 @@
 #include "render.h"
 
 uint32_t rpm = 9999;
+uint32_t steer = 1234;
+float wheelspeed[4];
 
 void handle_focus_rpm(can_frame_t* frame)
 {
-	rpm = (256 * (frame->data8[4] - 96) + frame->data8[5]) * 2;
+	rpm = (256 * (frame->data8[4] & 0xf) + frame->data8[5]) * 2;
+}
+void handle_focus_steering(can_frame_t* frame)
+{
+	int tmp = (256 * (frame->data8[5] - 128)) + frame->data8[6];
+	steer = tmp / 10 + 2000;
+}
+
+void handle_focus_wheel_speed(can_frame_t* frame)
+{
+	for(int i = 0; i < 4; i++)
+	{
+		uint8_t msb = frame->data8[2 * i] - 128;
+		uint8_t lsb = frame->data8[2 * i + 1];
+
+		wheelspeed[i] = (256 * msb + lsb) / 100.0f;
+	}
 }
 
 #include "stdint.h"
@@ -27,6 +45,15 @@ uint16_t rgb(uint8_t r, uint8_t g, uint8_t b) {
 	return c;
 }
 
+void stringify(uint32_t n, char* str)
+{
+	str[0] = n / 1000 + '0';
+	str[1] = (n / 100) % 10 + '0';
+	str[2] = (n / 10) % 10 + '0';
+	str[3] = n % 10 + '0';
+	str[4] = 0;
+}
+
 int main(void)
 {
 	SystemCoreClockUpdate();
@@ -38,28 +65,29 @@ int main(void)
 	CAN_Init();
 
 	CAN_RegisterReceptionHandler(0x090, &handle_focus_rpm);
+	CAN_RegisterReceptionHandler(0x0b0, &handle_focus_steering);
+	CAN_RegisterReceptionHandler(0x190, &handle_focus_wheel_speed);
 
 	LCD_Init();
 
 	DMA2DRender r(framebuffer, 96, 64);
 
 	//int n = 0;
-
 	while(1)
 	{
-		int n = rpm;
+		uint32_t localRpm = rpm;
+		uint32_t localSteer = steer;
 
-		char str[5];
-		str[0] = n / 1000 + '0';
-		str[1] = (n / 100) % 10 + '0';
-		str[2] = (n / 10) % 10 + '0';
-		str[3] = n % 10 + '0';
-		str[4] = 0;
+		char strRpm[5];
+		char strSteer[5];
 
-		r.FillRect(0, 0, 96, 64, 0x0000);
+		stringify(localRpm, strRpm);
+		stringify(localSteer, strSteer);
 
-		r.DrawString(0, 0, 0, str, 0x00ff8000);
-		r.DrawString(0, 30, 0, str, 0x000080ff);
+		r.FillRect(0, 0, 96, 64, localRpm > 5800 ? 0xF800 : 0x0000);
+
+		r.DrawString(0, 0, 0, strRpm, 0x000090ff);
+		r.DrawString(0, 30, 0, strSteer, 0x000090ff);
 
 		LCD_WriteFramebuffer(framebuffer);
 
