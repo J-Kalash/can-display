@@ -14,7 +14,7 @@ void Render::DrawString(uint16_t x, uint16_t y, uint16_t kern, char* str, uint32
 {
 	while(*str != 0)
     {
-    	font_character_t* c = &font_comicsans_30[*str - ' '];
+    	font_character_t* c = &font_calibri_30[*str - ' '];
 
     	int charHeightOffset = 0;
     	int charWidth = c->width;
